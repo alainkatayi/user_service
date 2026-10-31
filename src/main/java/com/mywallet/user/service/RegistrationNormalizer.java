@@ -34,7 +34,7 @@ public final class RegistrationNormalizer {
 			String phone) {
 		List<FieldViolation> errors = new ArrayList<>();
 		String normalizedEmail = normalizeEmail(email, errors);
-		validatePassword(password, errors);
+		validatePassword(password, "password", errors);
 		String normalizedFirstName = normalizeName(firstName, "firstName", "Le prénom", errors);
 		String normalizedLastName = normalizeName(lastName, "lastName", "Le nom", errors);
 		String normalizedPhone = normalizePhone(phone, errors);
@@ -55,6 +55,25 @@ public final class RegistrationNormalizer {
 		return email.trim().toLowerCase(Locale.ROOT);
 	}
 
+	public static ProfileResult normalizeProfile(String firstName, String lastName, String phone) {
+		List<FieldViolation> errors = new ArrayList<>();
+		String normalizedFirstName = normalizeName(firstName, "firstName", "Le prénom", errors);
+		String normalizedLastName = normalizeName(lastName, "lastName", "Le nom", errors);
+		String normalizedPhone = normalizePhone(phone, errors);
+		if (!errors.isEmpty()) {
+			return new ProfileResult(null, errors);
+		}
+		return new ProfileResult(
+				new NormalizedProfile(normalizedFirstName, normalizedLastName, normalizedPhone),
+				List.of());
+	}
+
+	public static List<FieldViolation> validateNewPassword(String password) {
+		List<FieldViolation> errors = new ArrayList<>();
+		validatePassword(password, "newPassword", errors);
+		return List.copyOf(errors);
+	}
+
 	private static String normalizeEmail(String email, List<FieldViolation> errors) {
 		if (email == null || email.trim().isEmpty()) {
 			errors.add(new FieldViolation("email", "L'adresse e-mail est obligatoire."));
@@ -72,17 +91,17 @@ public final class RegistrationNormalizer {
 		return normalized;
 	}
 
-	private static void validatePassword(String password, List<FieldViolation> errors) {
+	private static void validatePassword(String password, String field, List<FieldViolation> errors) {
 		if (password == null || password.isEmpty()) {
-			errors.add(new FieldViolation("password", "Le mot de passe est obligatoire."));
+			errors.add(new FieldViolation(field, "Le mot de passe est obligatoire."));
 			return;
 		}
 		if (password.length() < PASSWORD_MIN_LENGTH || password.length() > PASSWORD_MAX_LENGTH) {
-			errors.add(new FieldViolation("password", "Le mot de passe doit contenir entre 8 et 64 caractères."));
+			errors.add(new FieldViolation(field, "Le mot de passe doit contenir entre 8 et 64 caractères."));
 			return;
 		}
 		if (password.getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_BYTES) {
-			errors.add(new FieldViolation("password", "Le mot de passe ne doit pas dépasser 72 octets UTF-8."));
+			errors.add(new FieldViolation(field, "Le mot de passe ne doit pas dépasser 72 octets UTF-8."));
 			return;
 		}
 		boolean letter = false;
@@ -98,7 +117,7 @@ public final class RegistrationNormalizer {
 			offset += Character.charCount(codePoint);
 		}
 		if (!letter || !digit) {
-			errors.add(new FieldViolation("password", "Le mot de passe doit contenir au moins une lettre et un chiffre."));
+			errors.add(new FieldViolation(field, "Le mot de passe doit contenir au moins une lettre et un chiffre."));
 		}
 	}
 
@@ -134,6 +153,21 @@ public final class RegistrationNormalizer {
 			String firstName,
 			String lastName,
 			String phone) {
+	}
+
+	public record NormalizedProfile(String firstName, String lastName, String phone) {
+	}
+
+	public record ProfileResult(NormalizedProfile value, List<FieldViolation> errors) {
+
+		public ProfileResult {
+			errors = List.copyOf(errors);
+		}
+
+		public boolean valid() {
+			return errors.isEmpty();
+		}
+
 	}
 
 	public record Result(NormalizedRegistration value, List<FieldViolation> errors) {

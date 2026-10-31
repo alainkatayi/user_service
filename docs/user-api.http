@@ -5,6 +5,7 @@
 # 4. Envoyer le rafraîchissement : nouveau accessToken et nouveau refreshToken. Rejouer l'ancien refreshToken : 401, et le nouveau est aussi révoqué.
 # 5. Se reconnecter, envoyer la déconnexion : 204. Un second logout ou un refresh de ce jeton ne révèle pas s'il existait (204, puis 401).
 # 6. Cinq mots de passe faux, puis le bon : 401 INVALID_CREDENTIALS jusqu'à la fin des 15 minutes.
+# 7. Avec accessToken en Bearer : GET /api/users/me, puis PUT du profil. POST /api/users/me/password révoque tous les jetons de rafraîchissement.
 
 @email = ada.{{$uuid}}@example.com
 @password = Motdepasse1
@@ -63,3 +64,30 @@ Content-Type: application/json
 ### JWKS
 GET http://localhost:8081/.well-known/jwks.json
 Accept: application/json
+
+### Profil
+GET http://localhost:8081/api/users/me
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### Modifier le profil
+PUT http://localhost:8081/api/users/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Byron",
+  "phone": "{{phone}}"
+}
+
+### Changer le mot de passe
+POST http://localhost:8081/api/users/me/password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "NouveauMot2"
+}

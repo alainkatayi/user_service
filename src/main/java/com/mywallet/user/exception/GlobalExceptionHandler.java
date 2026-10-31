@@ -1,7 +1,5 @@
 package com.mywallet.user.exception;
 
-import java.net.URI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -69,6 +67,66 @@ public class GlobalExceptionHandler {
 				request);
 	}
 
+	@ExceptionHandler(UserNotFoundException.class)
+	public ProblemDetail handleUserNotFound(HttpServletRequest request) {
+		return problem(
+				HttpStatus.NOT_FOUND,
+				"Introuvable",
+				"Utilisateur introuvable.",
+				"USER_NOT_FOUND",
+				request);
+	}
+
+	@ExceptionHandler(WrongCurrentPasswordException.class)
+	public ProblemDetail handleWrongCurrentPassword(HttpServletRequest request) {
+		return problem(
+				HttpStatus.BAD_REQUEST,
+				"Requête invalide",
+				"Le mot de passe actuel est incorrect.",
+				"WRONG_CURRENT_PASSWORD",
+				request);
+	}
+
+	@ExceptionHandler(SamePasswordException.class)
+	public ProblemDetail handleSamePassword(HttpServletRequest request) {
+		return problem(
+				HttpStatus.BAD_REQUEST,
+				"Requête invalide",
+				"Le nouveau mot de passe doit être différent de l'actuel.",
+				"SAME_PASSWORD",
+				request);
+	}
+
+	@ExceptionHandler(ConcurrentUpdateException.class)
+	public ProblemDetail handleConcurrentUpdate(HttpServletRequest request) {
+		return problem(
+				HttpStatus.CONFLICT,
+				"Conflit",
+				"La fiche a été modifiée entre-temps.",
+				"CONCURRENT_UPDATE",
+				request);
+	}
+
+	@ExceptionHandler(UnauthenticatedException.class)
+	public ProblemDetail handleUnauthenticated(HttpServletRequest request) {
+		return problem(
+				HttpStatus.UNAUTHORIZED,
+				"Non autorisé",
+				"Authentification requise.",
+				"UNAUTHENTICATED",
+				request);
+	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	public ProblemDetail handleForbidden(HttpServletRequest request) {
+		return problem(
+				HttpStatus.FORBIDDEN,
+				"Interdit",
+				"Accès refusé.",
+				"FORBIDDEN",
+				request);
+	}
+
 	@ExceptionHandler(DuplicatePhoneException.class)
 	public ProblemDetail handleDuplicatePhone(HttpServletRequest request) {
 		return problem(
@@ -110,11 +168,7 @@ public class GlobalExceptionHandler {
 			String detail,
 			String code,
 			HttpServletRequest request) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
-		problem.setTitle(title);
-		problem.setInstance(URI.create(request.getRequestURI()));
-		problem.setProperty("code", code);
-		return problem;
+		return ProblemDetails.of(status, title, detail, code, request);
 	}
 
 }

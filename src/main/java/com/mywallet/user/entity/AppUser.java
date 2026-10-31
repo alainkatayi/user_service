@@ -95,6 +95,18 @@ public class AppUser implements Persistable<UUID> {
 		this.newEntity = true;
 	}
 
+	public void updateProfile(String firstName, String lastName, String phone, Instant now) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.phone = phone;
+		this.updatedAt = now;
+	}
+
+	public void changePassword(String passwordHash, Instant now) {
+		this.passwordHash = passwordHash;
+		this.updatedAt = now;
+	}
+
 	public static AppUser register(
 			UUID id,
 			String email,
