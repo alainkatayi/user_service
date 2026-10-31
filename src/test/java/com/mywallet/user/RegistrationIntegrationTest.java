@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -26,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -54,6 +58,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class RegistrationIntegrationTest {
 
 	private static final AtomicInteger PHONE_SEQUENCE = new AtomicInteger(1_000_000);
+
+	private static final Path KEYS_DIR = createKeysDir();
+
+	@DynamicPropertySource
+	static void jwtKeys(DynamicPropertyRegistry registry) {
+		registry.add("app.jwt.keys-dir", KEYS_DIR::toString);
+	}
 
 	@Container
 	@ServiceConnection
@@ -354,6 +365,15 @@ class RegistrationIntegrationTest {
 
 	private static String uniquePhone() {
 		return "+3361%07d".formatted(PHONE_SEQUENCE.incrementAndGet());
+	}
+
+	private static Path createKeysDir() {
+		try {
+			return Files.createTempDirectory("user-service-register-keys");
+		}
+		catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
 	}
 
 	private static DataIntegrityViolationException catchViolation(Runnable action) {

@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Clés JWT locales, générées au démarrage. En production la clé privée vient d'un coffre.
+keys/

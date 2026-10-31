@@ -17,8 +17,8 @@ public class GlobalExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler(RegistrationValidationException.class)
-	public ProblemDetail handleValidation(RegistrationValidationException exception, HttpServletRequest request) {
+	@ExceptionHandler(RequestValidationException.class)
+	public ProblemDetail handleValidation(RequestValidationException exception, HttpServletRequest request) {
 		ProblemDetail problem = problem(
 				HttpStatus.BAD_REQUEST,
 				"Requête invalide",
@@ -36,6 +36,36 @@ public class GlobalExceptionHandler {
 				"Conflit",
 				"Cette adresse e-mail est déjà utilisée.",
 				"EMAIL_ALREADY_USED",
+				request);
+	}
+
+	@ExceptionHandler(InvalidCredentialsException.class)
+	public ProblemDetail handleInvalidCredentials(HttpServletRequest request) {
+		return problem(
+				HttpStatus.UNAUTHORIZED,
+				"Non autorisé",
+				"Identifiants invalides.",
+				"INVALID_CREDENTIALS",
+				request);
+	}
+
+	@ExceptionHandler(InvalidRefreshTokenException.class)
+	public ProblemDetail handleInvalidRefreshToken(HttpServletRequest request) {
+		return problem(
+				HttpStatus.UNAUTHORIZED,
+				"Non autorisé",
+				"Jeton de rafraîchissement invalide.",
+				"INVALID_REFRESH_TOKEN",
+				request);
+	}
+
+	@ExceptionHandler(UserSuspendedException.class)
+	public ProblemDetail handleUserSuspended(HttpServletRequest request) {
+		return problem(
+				HttpStatus.FORBIDDEN,
+				"Interdit",
+				"Ce compte est suspendu.",
+				"USER_SUSPENDED",
 				request);
 	}
 

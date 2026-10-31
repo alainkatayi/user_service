@@ -51,12 +51,16 @@ public final class RegistrationNormalizer {
 				List.of());
 	}
 
+	public static String canonicalEmail(String email) {
+		return email.trim().toLowerCase(Locale.ROOT);
+	}
+
 	private static String normalizeEmail(String email, List<FieldViolation> errors) {
 		if (email == null || email.trim().isEmpty()) {
 			errors.add(new FieldViolation("email", "L'adresse e-mail est obligatoire."));
 			return null;
 		}
-		String normalized = email.trim().toLowerCase(Locale.ROOT);
+		String normalized = canonicalEmail(email);
 		if (normalized.length() > EMAIL_MAX_LENGTH) {
 			errors.add(new FieldViolation("email", "L'adresse e-mail ne doit pas dépasser 150 caractères."));
 			return null;

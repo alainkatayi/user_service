@@ -3,6 +3,7 @@ package com.mywallet.user.entity;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Column;
@@ -19,7 +20,9 @@ import jakarta.persistence.Version;
 /**
  * Un identifiant assigné fait prendre l'entité pour une ligne déjà existante : Spring Data appelle alors merge, et avec @Version cet update n'insère rien.
  * AppUser implémente Persistable avec un drapeau newEntity, vrai seulement dans register et remis à faux par @PostPersist et @PostLoad, pour que save exécute persist.
+ * DynamicUpdate limite une sauvegarde de profil aux colonnes sales, pour ne pas réécraser failed_login_attempts ou locked_until.
  */
+@DynamicUpdate
 @Entity
 @Table(name = "app_user")
 public class AppUser implements Persistable<UUID> {

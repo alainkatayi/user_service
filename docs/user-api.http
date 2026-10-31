@@ -1,9 +1,14 @@
 # Comment tester à la main
-# 1. Démarrer PostgreSQL : docker compose up -d (localhost:5435, base db_user).
-# 2. Lancer l'application : mvnw.cmd spring-boot:run (écoute sur le port 8081).
-# 3. Envoyer la requête ci-dessous avec le client HTTP JetBrains : {{$uuid}} et {{$random.integer}} changent à chaque envoi.
-# 4. Attendu : 201, Location finissant par /api/users/me, corps sans champ de mot de passe. Le même e-mail renvoie 409 EMAIL_ALREADY_USED.
-# 5. Suite automatisée : mvnw.cmd test (Docker requis ; Testcontainers démarre PostgreSQL 16, sans ce docker-compose).
+# 1. docker compose up -d, puis mvnw.cmd spring-boot:run (port 8081, Postgres sur localhost:5435).
+# 2. Envoyer l'inscription, puis la connexion : 200, expiresIn 900, les deux jetons sont capturés.
+# 3. Coller accessToken sur https://jwt.io et ouvrir GET /.well-known/jwks.json (clé publique, aucun champ d).
+# 4. Envoyer le rafraîchissement : nouveau accessToken et nouveau refreshToken. Rejouer l'ancien refreshToken : 401, et le nouveau est aussi révoqué.
+# 5. Se reconnecter, envoyer la déconnexion : 204. Un second logout ou un refresh de ce jeton ne révèle pas s'il existait (204, puis 401).
+# 6. Cinq mots de passe faux, puis le bon : 401 INVALID_CREDENTIALS jusqu'à la fin des 15 minutes.
+
+@email = ada.{{$uuid}}@example.com
+@password = Motdepasse1
+@phone = +336{{$random.integer(10000000, 99999999)}}
 
 ### Inscription
 POST http://localhost:8081/api/auth/register
@@ -11,9 +16,50 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "email": "ada.{{$uuid}}@example.com",
-  "password": "Motdepasse1",
+  "email": "{{email}}",
+  "password": "{{password}}",
   "firstName": "Ada",
   "lastName": "Lovelace",
-  "phone": "+336{{$random.integer(10000000, 99999999)}}"
+  "phone": "{{phone}}"
 }
+
+### Connexion
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+client.global.set("accessToken", response.body.accessToken);
+client.global.set("refreshToken", response.body.refreshToken);
+%}
+
+### Rafraîchissement
+POST http://localhost:8081/api/auth/refresh
+Content-Type: application/json
+Accept: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+client.global.set("accessToken", response.body.accessToken);
+client.global.set("refreshToken", response.body.refreshToken);
+%}
+
+### Déconnexion
+POST http://localhost:8081/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### JWKS
+GET http://localhost:8081/.well-known/jwks.json
+Accept: application/json
