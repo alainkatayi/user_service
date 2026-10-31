@@ -1,0 +1,19 @@
+# Comment tester à la main
+# 1. Démarrer PostgreSQL : docker compose up -d (localhost:5435, base db_user).
+# 2. Lancer l'application : mvnw.cmd spring-boot:run (écoute sur le port 8081).
+# 3. Envoyer la requête ci-dessous avec le client HTTP JetBrains : {{$uuid}} et {{$random.integer}} changent à chaque envoi.
+# 4. Attendu : 201, Location finissant par /api/users/me, corps sans champ de mot de passe. Le même e-mail renvoie 409 EMAIL_ALREADY_USED.
+# 5. Suite automatisée : mvnw.cmd test (Docker requis ; Testcontainers démarre PostgreSQL 16, sans ce docker-compose).
+
+### Inscription
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "ada.{{$uuid}}@example.com",
+  "password": "Motdepasse1",
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "phone": "+336{{$random.integer(10000000, 99999999)}}"
+}
