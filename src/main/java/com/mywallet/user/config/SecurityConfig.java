@@ -51,6 +51,7 @@ public class SecurityConfig {
 						.authenticationEntryPoint(problemResponses)
 						.accessDeniedHandler(problemResponses))
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
 						.requestMatchers(HttpMethod.GET, "/.well-known/jwks.json", "/actuator/health").permitAll()
 						.requestMatchers("/api/users/**").authenticated()
@@ -83,9 +84,12 @@ public class SecurityConfig {
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+		configuration.setAllowedOrigins(List.of(
+				"http://localhost:4200",
+				"http://127.0.0.1:4200"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setMaxAge(Duration.ofHours(1));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
