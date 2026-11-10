@@ -54,6 +54,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
 						.requestMatchers(HttpMethod.GET, "/.well-known/jwks.json", "/actuator/health").permitAll()
+						.requestMatchers(HttpMethod.GET, "/internal/users/by-phone").permitAll()
+						.requestMatchers(HttpMethod.GET, "/internal/users/*").permitAll()
 						.requestMatchers("/api/users/**").authenticated()
 						.requestMatchers("/internal/**").denyAll()
 						.anyRequest().denyAll())

@@ -134,6 +134,15 @@ public final class RegistrationNormalizer {
 		return normalized;
 	}
 
+	public static String requirePhone(String phone) {
+		List<FieldViolation> errors = new ArrayList<>();
+		String normalized = normalizePhone(phone, errors);
+		if (!errors.isEmpty()) {
+			throw new com.mywallet.user.exception.RequestValidationException(errors);
+		}
+		return normalized;
+	}
+
 	private static String normalizePhone(String phone, List<FieldViolation> errors) {
 		if (phone == null || phone.isBlank()) {
 			errors.add(new FieldViolation("phone", "Le numéro de téléphone est obligatoire."));

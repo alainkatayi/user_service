@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mywallet.user.dto.ChangePasswordRequest;
+import com.mywallet.user.dto.PhoneLookupRequest;
+import com.mywallet.user.dto.RecipientLookupResponse;
 import com.mywallet.user.dto.UpdateProfileRequest;
 import com.mywallet.user.dto.UserResponse;
 import com.mywallet.user.security.CurrentUser;
 import com.mywallet.user.service.PasswordService;
 import com.mywallet.user.service.ProfileService;
+import com.mywallet.user.service.RecipientLookupService;
 
 @RestController
 @RequestMapping("/api/users")
@@ -22,11 +25,17 @@ public class UserController {
 	private final CurrentUser currentUser;
 	private final ProfileService profileService;
 	private final PasswordService passwordService;
+	private final RecipientLookupService recipients;
 
-	public UserController(CurrentUser currentUser, ProfileService profileService, PasswordService passwordService) {
+	public UserController(
+			CurrentUser currentUser,
+			ProfileService profileService,
+			PasswordService passwordService,
+			RecipientLookupService recipients) {
 		this.currentUser = currentUser;
 		this.profileService = profileService;
 		this.passwordService = passwordService;
+		this.recipients = recipients;
 	}
 
 	@GetMapping("/me")
@@ -43,6 +52,11 @@ public class UserController {
 	public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
 		passwordService.change(currentUser.id(), request);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/lookup")
+	public RecipientLookupResponse lookup(@RequestBody(required = false) PhoneLookupRequest body) {
+		return recipients.lookup(currentUser.id(), body == null ? null : body.phone());
 	}
 
 }

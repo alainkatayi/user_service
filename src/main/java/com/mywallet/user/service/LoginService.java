@@ -47,9 +47,9 @@ public class LoginService {
 
 	public LoginResponse login(LoginRequest request) {
 		validate(request);
-		String email = RegistrationNormalizer.canonicalEmail(request.email());
+		String phone = RegistrationNormalizer.requirePhone(request.phone());
 		String password = request.password();
-		Optional<AppUser> found = userRepository.findByEmail(email);
+		Optional<AppUser> found = userRepository.findByPhone(phone);
 		if (found.isEmpty()) {
 			passwordEncoder.matches(password, dummyPasswordHash);
 			throw new InvalidCredentialsException();
@@ -79,8 +79,8 @@ public class LoginService {
 
 	private static void validate(LoginRequest request) {
 		List<FieldViolation> errors = new ArrayList<>();
-		if (request == null || request.email() == null || request.email().trim().isEmpty()) {
-			errors.add(new FieldViolation("email", "L'adresse e-mail est obligatoire."));
+		if (request == null || request.phone() == null || request.phone().isBlank()) {
+			errors.add(new FieldViolation("phone", "Le numéro de téléphone est obligatoire."));
 		}
 		if (request == null || request.password() == null || request.password().isEmpty()) {
 			errors.add(new FieldViolation("password", "Le mot de passe est obligatoire."));

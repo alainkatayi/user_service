@@ -1,4 +1,4 @@
 package com.mywallet.user.dto;
 
-public record LoginRequest(String email, String password) {
+public record LoginRequest(String phone, String password) {
 }

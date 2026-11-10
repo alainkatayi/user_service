@@ -77,6 +77,16 @@ public class GlobalExceptionHandler {
 				request);
 	}
 
+	@ExceptionHandler(SelfTransferException.class)
+	public ProblemDetail handleSelfTransfer(HttpServletRequest request) {
+		return problem(
+				HttpStatus.BAD_REQUEST,
+				"Requête invalide",
+				"Vous ne pouvez pas vous envoyer de l’argent à vous-même.",
+				"SELF_TRANSFER",
+				request);
+	}
+
 	@ExceptionHandler(WrongCurrentPasswordException.class)
 	public ProblemDetail handleWrongCurrentPassword(HttpServletRequest request) {
 		return problem(
